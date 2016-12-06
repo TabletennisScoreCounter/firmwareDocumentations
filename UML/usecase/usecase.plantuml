@@ -1,0 +1,21 @@
+@startuml
+
+left to right direction
+
+actor "User" as ActorUser
+
+Rectangle "システム" as PackageSystem{
+  usecase "自分のスコアカウントアップ \n==\n スコアに応じてセットカウントも変更" as UsecaseSelfScoreUp
+  usecase "相手のスコアカウントアップ \n==\n スコアに応じてセットカウントも変更" as UsecaseEnemyScoreUp
+  usecase "スコアリセット" as UsecaseScoreReset
+  usecase "自分のスコア修正" as UsecaseSelfScoreChange
+  usecase "相手のスコア修正" as UsecaseEnemyScoreChange
+}
+
+ActorUser -- UsecaseSelfScoreUp : BLEでウェアラブルから
+ActorUser -- UsecaseEnemyScoreUp : BLEでウェアラブルから
+ActorUser -- UsecaseScoreReset : デバイスに備え付けのボタンで
+ActorUser -- UsecaseSelfScoreChange : デバイスに備え付けのボタンで
+ActorUser -- UsecaseEnemyScoreChange : デバイスに備え付けのボタンで
+
+@enduml
