@@ -1,0 +1,56 @@
+@startuml
+
+title FWクラス図
+
+
+class "SegmentControl" as ClassSegmentControl{
+  +SegmentControl(bottomLeft : GPIO_PORT_NAME_t, bottom : GPIO_PORT_NAME_t, bottomRight : GPIO_PORT_NAME_t, \n middle : GPIO_PORT_NAME_t, \n topLeft : GPIO_PORT_NAME_t, top : GPIO_PORT_NAME_t, topRight : GPIO_PORT_NAME_t) : SegmentControl&
+  +write(value : uint8_t) : void
+  +operator=(value : uint8_t) : SegmentControl&
+  -const SEGMENT_0 : uint8_t
+  -const SEGMENT_1 : uint8_t
+  -const SEGMENT_2 : uint8_t
+  -const SEGMENT_3 : uint8_t
+  -const SEGMENT_4 : uint8_t
+  -const SEGMENT_5 : uint8_t
+  -const SEGMENT_6 : uint8_t
+  -const SEGMENT_7 : uint8_t
+  -const SEGMENT_8 : uint8_t
+  -const SEGMENT_9 : uint8_t
+}
+
+class "BusOut" as ClassBusOut{
+  +BusOut(first : const First&, rest : const Rest&...) : BusOut&
+  +write(data : uint8_t) : void
+  +operator=(data : uint8_t) : BusOut&
+  +BusOut() : BusOut&
+  -portList : std::string
+}
+class "DigitalOut" as ClassDigitalOut{
+  +DigitalOut(port : GPIO_PORT_NAME_t) : DigitalOut&
+  +write(status : bool) : void
+  +operator=(status : bool) : DigitalOut&
+  -PortName : GPIO_PORT_NAME_t
+  -GPIOTypeDef : GPIO_TypeDef*
+  -GPIOPin : uint16_t
+}
+package "CubeMX Generated Files"{
+  enum "GPIO_PORT_NAME_t" as EnumGPIO_PORT_NAME_t{
+    NC = -1
+    PA[0..15]
+    PB[0..15]
+    PC[0..15]
+    PD[0..15]
+  }
+  class "gpio.c" as FileGpio<<(F,orange)C source file>>{
+    +MX_GPIO_Init() : void
+    +getGPIO_TypeDef(portName : GPIO_PORT_NAME_t) : GPIO_TypeDef*
+    +getGPIO_Pin(portName : GPIO_PORT_NAME_t) : uint16_t
+    +setGPIOOutput(portName : GPIO_PORT_NAME_t) : void
+  }
+}
+
+ClassDigitalOut *- FileGpio
+ClassBusOut *- ClassDigitalOut
+ClassSegmentControl <|- ClassBusOut
+@enduml
