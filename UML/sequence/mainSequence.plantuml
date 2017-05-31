@@ -1,0 +1,97 @@
+@startuml
+
+title メインシーケンス
+
+hide footbox
+
+actor "User" as ActorUser
+box "Hardware"
+  participant "Button" as HardwareButton<<Hardware>>
+  participant "Timer" as HardwareTimer<<Hardware>>
+end box
+box "STM32CubeMXGeneratedCode"
+  participant "ex_int" as ClassEx_int
+  participant "tim_int" as ClassTim_int
+  participant "gpio" as Module_gpio
+  participant "timer" as Module_timer
+end box
+participant "ButtonManager" as ClassButtonManager
+participant "ScoreManager" as ClassScoreManager
+participant "MainSequencer" as ClassMainSequencer
+participant "DisplayManager" as ClassDisplayManager
+
+activate ClassMainSequencer
+
+==ハードウェア初期設定==
+ClassMainSequencer -> Module_gpio : GPIO初期設定
+  activate Module_gpio
+Module_gpio -> HardwareButton : 有効化
+  activate HardwareButton
+ClassMainSequencer <-- Module_gpio
+  deactivate Module_gpio
+
+ClassMainSequencer -> Module_timer : タイマの初期化
+  activate Module_timer
+Module_timer -> HardwareTimer : 有効化
+  activate HardwareTimer
+ClassMainSequencer <-- Module_timer
+  deactivate Module_timer
+
+
+==非同期ボタン押し下げ==
+ActorUser ->> HardwareButton : ボタン押下
+HardwareButton ->> ClassEx_int : GPIO割込
+  activate ClassEx_int
+ActorUser <<-- HardwareButton
+
+ClassEx_int -> ClassButtonManager : ボタン処理
+  activate ClassButtonManager
+opt ボタン[自分側]
+  ClassButtonManager -> ClassScoreManager : 自分のスコアカウントアップ
+    activate ClassScoreManager
+
+  ref over ClassScoreManager
+    [[./calcurateScore.svg]]
+    スコア計算
+  end ref
+
+  ClassButtonManager <-- ClassScoreManager
+    deactivate ClassScoreManager
+else
+  ClassButtonManager -> ClassScoreManager : 相手のスコアカウントアップ
+    activate ClassScoreManager
+
+  ref over ClassScoreManager
+    [[./calcurateScore.svg]]
+    スコア計算
+  end ref
+
+  ClassButtonManager <-- ClassScoreManager
+    deactivate ClassScoreManager
+end
+ClassEx_int <-- ClassButtonManager
+  deactivate ClassButtonManager
+  deactivate ClassEx_int
+
+==非同期タイマ割り込み==
+HardwareTimer ->> ClassTim_int : タイマ割り込み
+  activate ClassTim_int
+ClassTim_int -> ClassDisplayManager : ディスプレイ切り替え処理
+  activate ClassDisplayManager
+
+ClassDisplayManager -> ClassScoreManager : 現在スコアの問い合わせ
+  activate ClassScoreManager
+ClassDisplayManager <-- ClassScoreManager : 最新スコア
+  deactivate ClassScoreManager
+
+ref over ClassDisplayManager
+  [[./displayChannelIncrement.svg]]
+  ディスプレイの切り替え
+end ref
+
+ClassTim_int <-- ClassDisplayManager
+  deactivate ClassDisplayManager
+  deactivate ClassTim_int
+
+
+@enduml

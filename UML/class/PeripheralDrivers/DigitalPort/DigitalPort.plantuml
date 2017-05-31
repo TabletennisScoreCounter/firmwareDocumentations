@@ -1,0 +1,55 @@
+@startuml
+
+title DigitalPort Class
+
+abstract "DigitalPort" as AbstractDigitalPort{
+  +DigitalPort(port : GPIO_TypeDef*, pin : uint16_t)
+  +~DigitalPort()
+  -Port : GPIO_TypeDef*
+  -Pin : uint16_t
+  #PullResister : uint32_t
+  #Mode : uint32_t
+  +{static}const NUM_OF_PORTS = 4 : uint16_t
+  +{static}const NUM_OF_PINS = 16 : uint16_t
+  -{static}PinUsedStatus[NUM_OF_PORTS][NUM_OF_PINS] : bool
+  +read() : bool
+  +operator bool()
+  #{static}checkPinUsable(port : GPIO_TypeDef, pin : uint16_t) : bool
+  #getPort() : GPIO_TypeDef*
+  #getPin() : uint16_t
+  -{static}updatePinOccupation(port : GPIO_TypeDef*, pin : uint16_t, add : bool) : void
+  -{static}getPortIndex(port : GPIO_TypeDef*) : int
+}
+
+class "DigitalOut" as ClassDigitalOut{
+  +DigitalOut(port : GPIO_TypeDef*, pin : uint16_t)
+  +write(data : bool) : void
+  +operator =(data : bool) : DigitalOut&
+  +setMode(outMode : OutMode_t) : void
+}
+enum "OutMode_t" as EnumOutMode_t{
+  MODE_PUSH_PULL = GPIO_MODE_OUTPUT_PP
+  MODE_OPEN_DRAIN = GPIO_MODE_OUTPUT_OD
+}
+ClassDigitalOut -- EnumOutMode_t
+
+class "DigitalIn" as ClassDigitalIn{
+  +DigitalIn(port : GPIO_TypeDef*, pin : uint16_t)
+  +setPullResister(pullMode : PullRes_t) : void
+  +IRQAttach(irqMode : IRQMode_t, funcPtr : void*) : void
+  +IRQDetach() : void
+  -{static}funcPtr[NUM_OF_PINS] : void*
+  -HAL_GPIO_EXTI_Callback(GPIO_Pin : uint16_t) : void
+  -{static}EXTI_UsedStatus[NUM_OF_PINS] : bool
+  -{static}checkEXTI_Usable() : bool
+}
+enum "PullRes_t" as EnumPullReg_t{
+  PULLRES_PULLUP = GPIO_PULLUP
+  PULLRES_NONE = GPIO_NOPULL
+  PULLRES_PULLDOWN = GPIO_PULLDOWN
+}
+ClassDigitalIn -- EnumPullReg_t
+
+AbstractDigitalPort <|-- ClassDigitalOut
+AbstractDigitalPort <|-- ClassDigitalIn
+@enduml
