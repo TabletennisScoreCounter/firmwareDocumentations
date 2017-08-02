@@ -4,7 +4,7 @@ title FWクラス図
 
 
 class "SegmentControl" as ClassSegmentControl{
-  +SegmentControl(bottomLeft : GPIO_PORT_NAME_t, bottom : GPIO_PORT_NAME_t, bottomRight : GPIO_PORT_NAME_t, \n middle : GPIO_PORT_NAME_t, \n topLeft : GPIO_PORT_NAME_t, top : GPIO_PORT_NAME_t, topRight : GPIO_PORT_NAME_t) : SegmentControl&
+  +SegmentControl(bottomLeft : GPIO_PORT_NAME_t, bottom : GPIO_PORT_NAME_t, bottomRight : GPIO_PORT_NAME_t, middle : GPIO_PORT_NAME_t, topLeft : GPIO_PORT_NAME_t, top : GPIO_PORT_NAME_t, topRight : GPIO_PORT_NAME_t) : SegmentControl&
   +write(value : uint8_t) : void
   +operator=(value : uint8_t) : SegmentControl&
   -const SEGMENT_0 : uint8_t
@@ -50,7 +50,11 @@ package "CubeMX Generated Files"{
   }
 }
 
+class "ButtonManager" as ClassButtonManager
+class "ScoreManager" as ClassScoreManager
+class "DisplayManager" as ClassDisplayManager
+
 ClassDigitalOut *- FileGpio
 ClassBusOut *- ClassDigitalOut
-ClassSegmentControl <|- ClassBusOut
+ClassSegmentControl -|> ClassBusOut
 @enduml
