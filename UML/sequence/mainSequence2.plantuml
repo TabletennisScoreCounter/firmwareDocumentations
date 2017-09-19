@@ -1,0 +1,115 @@
+@startuml
+
+title Main Sequence
+
+hide footbox
+
+participant "main.cpp" as File_Main_cpp
+box "STM32CubeMX Generated File"
+  participant "gpio" as ModuleGPIO<<module>>
+  participant "tim" as ModuleTim<<module>>
+end box
+participant "led1 : FullcolorLED" as objFullColorLED_led1
+participant "led2 : FullcolorLED" as objFullColorLED_led2
+participant "SegmentControl" as ClassSegmentControl
+participant "BusOut" as ClassBusOut
+
+==HAL_Driver Initialize==
+File_Main_cpp -> ModuleGPIO : MX_GPIO_Init()
+  activate ModuleGPIO
+File_Main_cpp <-- ModuleGPIO
+  deactivate ModuleGPIO
+
+loop X = 1,2,3,4,5
+  File_Main_cpp -> ModuleTim : MX_TIMX_Init()
+    activate ModuleTim
+  File_Main_cpp <-- ModuleTim
+    deactivate ModuleTim
+end
+
+==ServerReceiverLED Initialize==
+create objFullColorLED_led1
+File_Main_cpp -> objFullColorLED_led1 : <<new>>
+
+create objFullColorLED_led2
+File_Main_cpp -> objFullColorLED_led2 : <<new>>
+
+File_Main_cpp -> objFullColorLED_led1 : setDuty(5)
+  activate objFullColorLED_led1
+File_Main_cpp <-- objFullColorLED_led1
+  deactivate objFullColorLED_led1
+
+File_Main_cpp -> objFullColorLED_led2 : setDuty(5)
+  activate objFullColorLED_led2
+File_Main_cpp <-- objFullColorLED_led2
+  deactivate objFullColorLED_led2
+
+File_Main_cpp -> objFullColorLED_led1 : setColor(RED)
+  activate objFullColorLED_led1
+File_Main_cpp <-- objFullColorLED_led1
+  deactivate objFullColorLED_led1
+
+File_Main_cpp -> objFullColorLED_led2 : setColor(BLUE)
+  activate objFullColorLED_led2
+File_Main_cpp <-- objFullColorLED_led2
+  deactivate objFullColorLED_led2
+
+==7segment LED Initialize==
+create ClassSegmentControl
+File_Main_cpp -> ClassSegmentControl : <<new>>
+create ClassBusOut
+File_Main_cpp -> ClassBusOut : <<new>>
+
+File_Main_cpp -> ModuleTim : IRQAttachTIM5(callBack)
+  activate ModuleTim
+File_Main_cpp <-- ModuleTim
+  deactivate ModuleTim
+
+File_Main_cpp -> ModuleTim : StartTIM5()
+  activate ModuleTim
+File_Main_cpp <-- ModuleTim
+  deactivate ModuleTim
+
+==button and switch Initialize==
+File_Main_cpp -> ModuleTim : IRQAttachTIM4(calBackChattering)
+  activate ModuleTim
+File_Main_cpp <-- ModuleTim
+  deactivate ModuleTim
+
+File_Main_cpp -> ModuleTim : StartTIM4
+  activate ModuleTim
+File_Main_cpp <-- ModuleTim
+  deactivate ModuleTim
+
+loop port = {PA0,PA1,PC13,PA4,PC3}
+  File_Main_cpp -> ModuleGPIO : IRQAttach(port)
+    activate ModuleGPIO
+  File_Main_cpp <-- ModuleGPIO
+    deactivate ModuleGPIO
+end
+
+==Game mode detect==
+File_Main_cpp -> ModuleGPIO : GPIORead(PB0)
+  activate ModuleGPIO
+File_Main_cpp <-- ModuleGPIO : PB0 value
+  deactivate ModuleGPIO
+
+alt PB0 = High
+  File_Main_cpp -> File_Main_cpp : GameMode = DOUBLES
+    activate File_Main_cpp
+    deactivate File_Main_cpp
+else
+  File_Main_cpp -> File_Main_cpp : GameMode = SINGLES
+    activate File_Main_cpp
+    deactivate File_Main_cpp
+end
+
+==Infinit loop==
+loop Infinit
+  ref over File_Main_cpp
+    [[./refleshGameState.svg]]
+    refleshGameState(GameMode)
+  end ref
+end
+
+@enduml
