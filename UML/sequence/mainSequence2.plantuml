@@ -2,17 +2,23 @@
 
 title Main Sequence
 
-hide footbox
+'hide footbox
 
-participant "main.cpp" as File_Main_cpp
+box "MCU peripheral"
+
+  participant "Timer" as HardwareTimer<<hardware>>
+  participant "GPIO" as HardwareGPIO<<hardware>>
+end box
 box "STM32CubeMX Generated File"
   participant "gpio" as ModuleGPIO<<module>>
   participant "tim" as ModuleTim<<module>>
 end box
+participant "main.cpp" as File_Main_cpp
 participant "led1 : FullcolorLED" as objFullColorLED_led1
 participant "led2 : FullcolorLED" as objFullColorLED_led2
 participant "SegmentControl" as ClassSegmentControl
 participant "BusOut" as ClassBusOut
+participant "ScoreManager" as ClassScoreManager
 
 ==HAL_Driver Initialize==
 File_Main_cpp -> ModuleGPIO : MX_GPIO_Init()
@@ -112,4 +118,91 @@ loop Infinit
   end ref
 end
 
+==7segment callback==
+HardwareTimer ->> ModuleTim : TIM5 grobal
+  activate ModuleTim
+ModuleTim -> File_Main_cpp : callBack()
+  activate File_Main_cpp
+File_Main_cpp -> ClassBusOut : channel increment()
+  activate ClassBusOut
+File_Main_cpp <-- ClassBusOut
+  deactivate ClassBusOut
+File_Main_cpp -> ClassSegmentControl : set segvalue of current channel()
+  activate ClassSegmentControl
+File_Main_cpp <-- ClassSegmentControl
+  deactivate ClassSegmentControl
+ModuleTim <-- File_Main_cpp
+  deactivate File_Main_cpp
+  deactivate ModuleTim
+
+==button callback==
+HardwareGPIO ->> ModuleGPIO : PA0 falling
+  activate ModuleGPIO
+ModuleGPIO -> File_Main_cpp : callBackButton()
+  activate File_Main_cpp
+File_Main_cpp -> ClassScoreManager : addMyPoint()
+  activate ClassScoreManager
+File_Main_cpp <-- ClassScoreManager
+  deactivate ClassScoreManager
+ref over File_Main_cpp
+  [[./refleshSegmentValue.svg]]
+  reflesh segment value
+end ref
+
+ModuleGPIO <-- File_Main_cpp
+  deactivate File_Main_cpp
+  deactivate ModuleGPIO
+
+==button2 callback==
+HardwareGPIO ->> ModuleGPIO : PA1 falling
+  activate ModuleGPIO
+ModuleGPIO -> File_Main_cpp : callBackButton2()
+  activate File_Main_cpp
+File_Main_cpp -> ClassScoreManager : addEnemyPoint()
+  activate ClassScoreManager
+File_Main_cpp <-- ClassScoreManager
+  deactivate ClassScoreManager
+ref over File_Main_cpp
+  [[./refleshSegmentValue.svg]]
+  reflesh segment value
+end ref
+ModuleGPIO <-- File_Main_cpp
+  deactivate File_Main_cpp
+  deactivate ModuleGPIO
+
+==blueButton callback==
+HardwareGPIO ->> ModuleGPIO : PC13 falling
+  activate ModuleGPIO
+ModuleGPIO -> File_Main_cpp : callBackBlueButton()
+  activate File_Main_cpp
+File_Main_cpp -> ClassScoreManager : swapPoint()
+  activate ClassScoreManager
+File_Main_cpp <-- ClassScoreManager
+  deactivate ClassScoreManager
+ref over File_Main_cpp
+  [[./refleshSegmentValue.svg]]
+  reflesh segment value
+end ref
+
+ModuleGPIO <-- File_Main_cpp
+  deactivate File_Main_cpp
+  deactivate ModuleGPIO
+
+==button3 callback==
+HardwareGPIO ->> ModuleGPIO : PA4 falling
+  activate ModuleGPIO
+ModuleGPIO -> File_Main_cpp : callBackButton3()
+  activate File_Main_cpp
+File_Main_cpp -> ClassScoreManager : swapPoint()
+  activate ClassScoreManager
+File_Main_cpp <-- ClassScoreManager
+  deactivate ClassScoreManager
+ref over File_Main_cpp
+  [[./refleshSegmentValue.svg]]
+  reflesh segment value
+end ref
+
+ModuleGPIO <-- File_Main_cpp
+  deactivate File_Main_cpp
+  deactivate ModuleGPIO
 @enduml
